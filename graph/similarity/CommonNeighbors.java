@@ -23,7 +23,7 @@ import java.util.List;
 public class CommonNeighbors<K, VV, EV> {
     final private static String path = "D:\\Users\\Documents\\JavaProjects\\similariry\\src\\main\\resources\\0.txt";
     final static int DEFAULT_GROUP_SIZE = 64;
-    final static int DEFAULT_PARALLELISM = 2;
+    final static int DEFAULT_PARALLELISM = -1;
 
     private static int groupSize;
     private static int parallelism;
