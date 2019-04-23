@@ -1,4 +1,4 @@
-package com.xun.flink.graph;
+package com.xun.flink.graph.similarity;
 
 import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.common.functions.MapFunction;
@@ -19,8 +19,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class JaccardIndex<K, VV, EV> {
+    final private static String path = "D:\\Users\\Documents\\JavaProjects\\similariry\\src\\main\\resources\\graph.txt";
+    private static ExecutionEnvironment env;
+    public static void main(String[] args) throws Exception{
+        JaccardIndex<Integer, NullValue, Integer> jaccardIndex = new JaccardIndex<>();
+        env = ExecutionEnvironment.getExecutionEnvironment();
 
-public DataSet<Tuple3<K, K, Float>> run(Graph<K, VV, EV> input){
+        // construct graph from txt file
+        List<Edge<Integer, Integer>> edges = jaccardIndex.readEdgesFromFile(path);
+        Graph<Integer, NullValue, Integer> graph = Graph.fromCollection(edges, env);
+        graph = graph.getUndirected();
+
+        DataSet<Tuple3<Integer, Integer, Float>> score = jaccardIndex.run(graph);
+        score.print();
+    }
+
+    public DataSet<Tuple3<K, K, Float>> run(Graph<K, VV, EV> input){
+
         DataSet<Tuple2<K, Integer>> vertexWithDegree = input
                 .getEdges()
                 .map(new MapFunction<Edge<K,EV>, Tuple2<K, Integer>>() {
@@ -91,5 +106,27 @@ public DataSet<Tuple3<K, K, Float>> run(Graph<K, VV, EV> input){
                 visited.add(edge);
             }
         }
+    }
+
+    //read from file
+    private List<Edge<Integer, Integer>> readEdgesFromFile(String path){
+        List<Edge<Integer, Integer>> edges = new ArrayList<>();
+        String oneLine;
+        Integer[] vertices = new Integer[2];
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(path));
+
+            /*for(int i = 0; i != 4; ++i)
+                reader.readLine();*/
+            while((oneLine = reader.readLine()) != null){
+                vertices[0] = Integer.parseInt(oneLine.split(" ")[0]);
+                vertices[1] = Integer.parseInt(oneLine.split(" ")[1]);
+                edges.add(new Edge<>(vertices[0], vertices[1], 0));
+            }
+
+        }catch(IOException ioEx){
+            ioEx.printStackTrace();
+        }
+        return edges;
     }
 }
